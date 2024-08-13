@@ -48,27 +48,39 @@ end
 
 ---@param file? string
 function Sessions:save(file)
+	self.logger:debug("Saving session")
+
 	file = file or self.config.default_filename
 	local encoded_cwd = encode(vim.fn.getcwd())
 	local session_dir = vim.fs.joinpath(self.config.storage_dir, encoded_cwd)
 	vim.fn.mkdir(session_dir, "p")
 	local target_path = vim.fs.joinpath(session_dir, file)
 
+	self.logger:debug("Saving session to file: " .. target_path)
+
 	self.events:emit("SessionSavePre")
 	vim.cmd("mksession! " .. target_path)
 	self.events:emit("SessionSavePost")
+
+	self.logger:debug("Saved session to file: " .. target_path)
 end
 
 ---@param file? string
 function Sessions:load(file)
+	self.logger:debug("Loading session")
+
 	file = file or self.config.default_filename
 	local encoded_cwd = encode(vim.fn.getcwd())
 	local target_path = vim.fs.joinpath(self.config.storage_dir, encoded_cwd, file)
+
+	self.logger:debug("Loading session from file: " .. target_path)
 
 	if vim.fn.filereadable(target_path) ~= 0 then
 		self.events:emit("SessionLoadPre")
 		vim.cmd("silent! source " .. target_path)
 		self.events:emit("SessionLoadPost")
+
+		self.logger:debug("Loaded session from file: " .. target_path)
 	else
 		self.logger:error("Unable to open session file: " .. target_path)
 	end
@@ -76,8 +88,13 @@ end
 
 ---@return string[]
 function Sessions:list()
+	self.logger:debug("Listing sessions")
+
 	local encoded_cwd = encode(vim.fn.getcwd())
 	local target_path = vim.fs.joinpath(self.config.storage_dir, encoded_cwd, "*.vim")
+
+	self.logger:debug("Listing session using glob: " .. target_path)
+
 	local files = vim.fn.glob(target_path, true, true)
 	return vim.iter(files)
 		:map(function(file)
