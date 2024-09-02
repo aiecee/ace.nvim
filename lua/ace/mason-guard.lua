@@ -11,7 +11,7 @@ local function get_tools()
 	local formatters = vim.tbl_keys(formatter_specs)
 	local linter_specs = require("guard-collection.linter")
 	local linters = vim.tbl_keys(linter_specs)
-	local tools = vim.tbl_extend("keep", formatters, linters)
+	local tools = vim.list_extend(formatters, linters)
 
 	return vim.iter(registry.get_all_package_names())
 		:filter(function(item)
